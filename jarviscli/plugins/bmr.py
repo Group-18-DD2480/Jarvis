@@ -7,9 +7,14 @@ def track_branch(branch_id):
     branch_coverage[branch_id] = branch_coverage.get(branch_id, 0) + 1
 
 def write_coverage():
-    with open("branch_coverage.log", "w") as f:
-        for branch, count in branch_coverage.items():
-            f.write(f"Branch {branch}: {count} hits\n")
+    total_branches = 33 
+    covered_branches = len(branch_coverage)
+
+    with open("branch_coverage.log", "a") as f:
+        f.write(f"bmr covered {covered_branches} branches out of {total_branches}\n")
+        
+        for branch, count in sorted(branch_coverage.items()):
+            f.write(f"  Branch {branch}: {count} hits\n")
 
 @plugin("bmr")
 def bmr(jarvis, s):
