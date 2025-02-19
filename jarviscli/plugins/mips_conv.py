@@ -3,6 +3,15 @@ from plugin import plugin
 
 FILE_PATH = os.path.abspath(os.path.dirname(__file__))
 
+branch_coverage = {} #values <100 used for assemblyToHex and values >100 for hexToAssembly
+
+def track_branch(branch_id):
+    branch_coverage[branch_id] = branch_coverage.get(branch_id, 0) + 1
+
+def write_coverage():
+    with open("branch_coverage.log", "w") as f:
+        for branch, count in branch_coverage.items():
+            f.write(f"Branch {branch}: {count} hits\n")
 
 @plugin("mips")
 class MipsConverter:
@@ -286,19 +295,24 @@ class MipsConverter:
         i = 0
         # find the level in the lists where the relevent command info lies
         while i < len(self.__com):
+            track_branch(1)
             comName = assembly.upper()
             if (assembly.find(" ") != -1):
+                track_branch(2)
                 comName = (assembly[0: assembly.find(" ") + 1]).upper()
             comName = comName.strip()
             if (self.__com[i] == comName):
+                track_branch(3)
                 flag = True
                 break
             i = i + 1
 
         if (flag is False):
+            track_branch(4)
             jarvis.say("NO SUCH COMMAND IN ASSEMBLY")
             return
         else:
+            track_branch(5)
             jarvis.say("The format for this command is: "
                        + self.__com[i] + " " + self.__form[i])
             # append the opcode to the binary output
@@ -306,36 +320,45 @@ class MipsConverter:
 
             # To append rs register, if it is an R type instruction,
             if (self.__inType[i] == "R" and self.__rs[i] == "l"):
+                track_branch(6)
                 regR = ""
                 # these instructions have rs register at the end
                 if ((self.__com[i] == "SLLV") or (self.__com[i]
                                                   == "SRAV") or (self.__com[i] == "SRLV")):
+                    track_branch(7)
                     regR = self.__getRegLast(assembly)
                 # instructions with no d register put rs in the front
                 elif (self.__rd[i] != "l"):
+                    track_branch(8)
                     regR = self.__getRegFirst(assembly)
                 # the rest put rs in the middle of the first and last register
                 else:
+                    track_branch(9)
                     regR = self.__getRegSecond(assembly)
 
                 assBin = assBin + \
                     self.__getRegBin(regR, self.__regName, self.__regCode, jarvis)
             # To append rs register, if it is an I type instruction,
             elif(self.__inType[i] == "I" and self.__rs[i] == "l"):
+                track_branch(10)
                 regR = ""
                 # these instructions have rs register in the middle of the
                 # first and last register
                 if ((self.__com[i] == "SLTI") or (self.__com[i]
                                                   == "SLTIU") or (self.__com[i] == "ORI")):
+                    track_branch(11)
                     regR = self.__getRegSecond(assembly)
                 elif((self.__com[i] == "ANDI") or (self.__com[i] == "ADDI")):
+                    track_branch(12)
                     regR = self.__getRegSecond(assembly)
                 # these instructions have a form imm(rs) which makes locating
                 # rs easy
                 elif (self.__form[i].find("(") != -1):
+                    track_branch(13)
                     regR = assembly[assembly.find("(") + 1: assembly.find(")")]
                 # the rest put rs in the beginning
                 else:
+                    track_branch(14)
                     regR = self.__getRegFirst(assembly)
 
                 assBin = assBin + \
@@ -343,33 +366,41 @@ class MipsConverter:
             # if rs is niether of the above then rs code is already present in
             # the info
             elif (self.__rs[i] != "n"):
+                track_branch(15)
                 assBin = assBin + self.__rs[i]
 
             # To append rt register, if it is an R type instruction,
             if (self.__inType[i] == "R" and self.__rt[i] == "l"):
+                track_branch(16)
                 regR = ""
                 # these instructions have rt in the middle of first and last
                 # register
                 if ((self.__com[i] == "SRA") or (self.__com[i]
                                                  == "SRL") or (self.__com[i] == "SRLV")):
+                    track_branch(17)
                     regR = self.__getRegSecond(assembly)
                 elif ((self.__com[i] == "SRAV") or (self.__com[i] == "SLL") or (self.__com[i] == "SLLV")):
+                    track_branch(18)
                     regR = self.__getRegSecond(assembly)
                 # the rest have rt at the end
                 else:
+                    track_branch(19)
                     regR = self.__getRegLast(assembly)
 
                 assBin = assBin + \
                     self.__getRegBin(regR, self.__regName, self.__regCode, jarvis)
             # To append rt register, if it is an I type instruction,
             elif (self.__inType[i] == "I" and self.__rt[i] == "l"):
+                track_branch(20)
                 regR = ""
                 # these instructions have rt in the middle of first and last
                 # register
                 if ((self.__com[i] == "BEQ") or (self.__com[i] == "BNE")):
+                    track_branch(21)
                     regR = self.__getRegSecond(assembly)
                 # the rest have rt at the first pos
                 else:
+                    track_branch(22)
                     regR = self.__getRegFirst(assembly)
 
                 assBin = assBin + \
@@ -377,28 +408,36 @@ class MipsConverter:
             # if rt is niether of the above then rt code is already present in
             # the info
             elif (self.__rt[i] != "n"):
+                track_branch(23)
                 assBin = assBin + self.__rt[i]
 
             # To append rd register, if it is an R type instruction,
             if (self.__inType[i] == "R" and self.__rd[i] == "l"):
+                track_branch(24)
                 assBin = assBin + \
                     self.__getRegBin(self.__getRegFirst(assembly), self.__regName, self.__regCode, jarvis)
             # rd code is already present in the info
             elif (self.__rd[i] != "n"):
+                track_branch(25)
                 assBin = assBin + self.__rd[i]
 
             # if instruction is R type and shift amount is required
             if (self.__inType[i] == "R" and self.__shamt[i] == "l"):
+                track_branch(26)
                 amt = self.__getRegLast(assembly)
                 # handle if amount is in decimal
                 if (amt.find("x") == -1 and amt != "" and amt.find("$") == -1):
+                    track_branch(27)
                     if (len(self.__decToBin(amt)) > 5):
+                        track_branch(28)
                         jarvis.say("Shift amount is too great")
                     amt = ("0" * (5 - len(self.__decToBin(amt)))) + \
                         self.__decToBin(int(amt))
                 # handle if amount is in hex
                 else:
+                    track_branch(29)
                     if (len(self.__hexToBin(amt[2:])) > 5):
+                        track_branch(30)
                         jarvis.say("Shift amount is too great")
                     amt = (
                         "0" * (5 - len(self.__hexToBin(amt[2:])))) + self.__hexToBin(amt[2:])
@@ -406,43 +445,56 @@ class MipsConverter:
             # if instruction is R type and shift amount is not entered then it
             # is already present in the info
             elif (self.__inType[i] == "R"):
+                track_branch(31)
                 assBin = assBin + self.__shamt[i]
             # always append the function is instruction is R type
             if (self.__inType[i] == "R"):
+                track_branch(32)
                 assBin = assBin + self.__func[i]
 
             # immediate handeling
             if (self.__imm[i] == "l"):
+                track_branch(33)
                 immB = ""
 
                 if (assembly.find("(") == -1):
+                    track_branch(34)
                     immB = self.__getRegLast(assembly)
 
                 else:
+                    track_branch(35)
                     immB = assembly[assembly.rfind(" "): assembly.find("(")]
 
                 if (immB.find("x") == -1 and immB
                         != "" and immB.find("$") == -1):
+                    track_branch(36)
                     immB = self.__decToBin(int(immB))
 
                 else:
+                    track_branch(37)
                     immB = self.__hexToBin(immB[2:])
 
                 if (len(immB) > 16 and self.__inType[i] == "I"):
+                    track_branch(38)
                     jarvis.say("Immediate is too large")
 
                 elif (len(immB) > 26 and self.__inType[i] == "J"):
+                    track_branch(39)
                     jarvis.say("Immediate is too large")
                 else:
+                    track_branch(40)
                     if (self.__inType[i] == "I"):
+                        track_branch(41)
                         immB = ("0" * (16 - len(immB))) + immB
                     elif (self.__inType[i] == "J"):
+                        track_branch(42)
                         immB = ("0" * (26 - len(immB))) + immB
 
                 assBin = assBin + immB
 
         jarvis.say("Statement Type: " + self.__inType[i])
         if (self.__inType[i] == "R"):
+            track_branch(43)
             jarvis.say("opCode: " + assBin[0:6])
             jarvis.say("rs register: " + assBin[6:11])
             jarvis.say("rt register: " + assBin[11:16])
@@ -450,11 +502,13 @@ class MipsConverter:
             jarvis.say("Shift Amount: " + assBin[21:26])
             jarvis.say("Function: " + assBin[26:])
         elif (self.__inType[i] == "I"):
+            track_branch(44)
             jarvis.say("opCode: " + assBin[0:6])
             jarvis.say("rs register: " + assBin[6:11])
             jarvis.say("rt register: " + assBin[11:16])
             jarvis.say("immediate: 0x" + assBin[16:])
         elif (self.__inType[i] == "J"):
+            track_branch(45)
             jarvis.say("opCode: " + assBin[0:6])
             jarvis.say("immediate: 0x" + assBin[6:])
 
@@ -469,34 +523,44 @@ class MipsConverter:
         i = 0
         flag = False
         while (i < len(self.__op)):
+            track_branch(101)
             if ((self.__op[i] == command[0:6]) and (self.__op[i] != "000000")):
+                track_branch(102)
                 flag = True
                 break
             elif ((self.__func[i] == command[26:32]) and (self.__op[i] == "000000") and (command[0:6] == "000000")):
+                track_branch(103)
                 flag = True
                 break
             i = i + 1
 
         if (flag is False):
+            track_branch(104)
             jarvis.say("No such command exists.")
             return
         else:
+            track_branch(105)
             assembly = assembly + self.__com[i] + " "
             # compute the assembly instruction if instruction is R type
             if (self.__inType[i] == "R"):
+                track_branch(106)
                 # handle d register first, d reg always comes first in the R
                 # type instructions
                 if (self.__rd[i] == "l"):
+                    track_branch(107)
                     regR = command[16:21]
                     assembly = assembly + \
                         self.__findRegFromBin(regR, self.__regName, self.__regCode, jarvis) + " "
 
                 # handle s register..
                 if (self.__rs[i] == "l"):
+                    track_branch(108)
                     if ((self.__com[i] == "SLLV") or (
                             self.__com[i] == "SRAV") or (self.__com[i] == "SRLV")):
+                        track_branch(109)
                         regR = command[11:16]
                     else:
+                        track_branch(110)
                         regR = command[6:11]
 
                     assembly = assembly + \
@@ -504,10 +568,13 @@ class MipsConverter:
 
                 # handle t registers..
                 if (self.__rt[i] == "l"):
+                    track_branch(111)
                     if ((self.__com[i] == "SLLV") or (
                             self.__com[i] == "SRAV") or (self.__com[i] == "SRLV")):
+                        track_branch(112)
                         regR = command[6:11]
                     else:
+                        track_branch(113)
                         regR = command[11:16]
 
                     assembly = assembly + \
@@ -515,16 +582,21 @@ class MipsConverter:
 
                 # handle shift amount
                 if (self.__shamt[i] == "l"):
+                    track_branch(114)
                     regR = "000" + command[21:26]
                     assembly = assembly + "0x" + self.__binToHex(regR)
 
             # compute the assembly instruction if instruction is I type
             elif (self.__inType[i] == "I"):
+                track_branch(115)
                 # handle t registers
                 if (self.__rt[i] == "l"):
+                    track_branch(116)
                     if ((self.__com[i] == "BNE") or (self.__com[i] == "BEQ")):
+                        track_branch(117)
                         regR = command[6:11]
                     else:
+                        track_branch(118)
                         regR = command[11:16]
 
                     assembly = assembly + \
@@ -532,33 +604,44 @@ class MipsConverter:
 
                 # handle s registers
                 if (self.__rs[i] == "l"):
+                    track_branch(119)
                     if ((self.__com[i] == "BNE") or (self.__com[i] == "BEQ")):
+                        track_branch(120)
                         regR = command[11:16]
                         assembly = assembly + \
                             self.__findRegFromBin(regR, self.__regName, self.__regCode, jarvis) + " "
 
                     elif (self.__form[i].find("(") != -1):
+                        track_branch(121)
                         regR = command[16:]
                         assembly = assembly + "0x" + self.__binToHex(regR)
 
                     else:
+                        track_branch(122)
                         regR = command[6:11]
                         assembly = assembly + \
                             self.__findRegFromBin(regR, self.__regName, self.__regCode, jarvis) + " "
 
                 # handle immediate
                 if (self.__imm[i] == "l"):
+                    track_branch(123)
                     if (self.__form[i].find("(") != -1):
+                        track_branch(124)
                         regR = command[6:11]
                         assembly = assembly + \
                             "(" + self.__findRegFromBin(regR, self.__regName, self.__regCode, jarvis) + ")"
                     else:
+                        track_branch(125)
                         regR = command[16:]
                         assembly = assembly + "0x" + self.__binToHex(regR)
 
             # compute the assembly instruction if instruction is I type
             elif (self.__inType[i] == "J"):
+                track_branch(126)
                 # only immediate there thus,
                 regR = "00" + command[6:]
                 assembly = assembly + "0x" + self.__binToHex(regR)
         jarvis.say(assembly)
+
+import atexit
+atexit.register(write_coverage)

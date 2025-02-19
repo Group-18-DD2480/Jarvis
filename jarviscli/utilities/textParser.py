@@ -5,6 +5,15 @@ from datetime import timedelta
 from dateutil.relativedelta import relativedelta
 import re
 
+branch_coverage = {}
+
+def track_branch(branch_id):
+    branch_coverage[branch_id] = branch_coverage.get(branch_id, 0) + 1
+
+def write_coverage():
+    with open("branch_coverage.log", "w") as f:
+        for branch, count in branch_coverage.items():
+            f.write(f"Branch {branch}: {count} hits\n")
 
 def parse_number(string, numwords=None):
     """
@@ -60,7 +69,6 @@ def parse_number(string, numwords=None):
     value += current
     return skip, value
 
-
 def parse_date(string):
     """
     Parse the given string for a date or timespan.
@@ -90,70 +98,99 @@ def parse_date(string):
     skip = 0
     for index, d in enumerate(elements):
         if parse_day:
+            track_branch(1)
             d += dt.today().strftime(" %Y %W")
             try:
+                track_branch(2)
                 ret_date = dt.strptime(d, "%a %Y %W").date()
             except ValueError:
                 try:
+                    track_branch(3)
                     ret_date = dt.strptime(d, "%A %Y %W").date()
                 except ValueError:
+                    track_branch(4)
                     break
             if ret_date <= dt.now().date():
+                track_branch(5)
                 ret_date += timedelta(days=7)
             parse_day = False
         elif parse_delta_value:
+            track_branch(6)
             parse_delta_unit, delta_value = parse_number(
                 " ".join(elements[index:]))
             parse_delta_value = False
         elif parse_delta_unit:
+            track_branch(7)
             new_time = dt.combine(ret_date, ret_time)
             if "year" in d:
+                track_branch(8)
                 ret_date += relativedelta(years=delta_value)
             elif "month" in d:
+                track_branch(9)
                 ret_date += relativedelta(months=delta_value)
             elif "week" in d:
+                track_branch(10)
                 ret_date += timedelta(weeks=delta_value)
             elif "day" in d:
+                track_branch(11)
                 ret_date += timedelta(days=delta_value)
             elif "hour" in d:
+                track_branch(12)
                 new_time += timedelta(hours=delta_value)
                 ret_date = new_time.date()
                 ret_time = new_time.time()
             elif "minute" in d:
+                track_branch(13)
                 new_time += timedelta(minutes=delta_value)
                 ret_date = new_time.date()
                 ret_time = new_time.time()
             elif "second" in d:
+                track_branch(14)
                 new_time += timedelta(seconds=delta_value)
                 ret_date = new_time.date()
                 ret_time = new_time.time()
             elif parse_delta_unit == 1:
+                track_branch(15)
                 print("Missing time unit")
             parse_delta_unit -= 1
 
         elif re.match("^[0-9]{2}-[0-1][0-9]-[0-3][0-9]$", d):
+            track_branch(16)
             ret_date = dt.strptime(d, "%y-%m-%d").date()
         elif re.match("^[1-9][0-9]{3}-[0-1][0-9]-[0-3][0-9]$", d):
+            track_branch(17)
             ret_date = dt.strptime(d, "%Y-%m-%d").date()
         elif re.match("^[0-3][0-9]\\.[0-1][0-9]\\.[0-9]{2}$", d):
+            track_branch(18)
             ret_date = dt.strptime(d, "%d.%m.%y").date()
         elif re.match("^[0-3][0-9]\\.[0-1][0-9]\\.[1-9][0-9]{3}$", d):
+            track_branch(19)
             ret_date = dt.strptime(d, "%d.%m.%Y").date()
 
         elif re.match("^[0-1][0-9]:[0-5][0-9][AP]M$", d):
+            track_branch(20)
             ret_time = dt.strptime(d, "%I:%M%p").time()
         elif re.match("^[1-9]:[0-5][0-9][AP]M$", d):
+            track_branch(21)
             ret_time = dt.strptime("0" + d, "%I:%M%p").time()
         elif re.match("^[0-2][0-9]:[0-5][0-9]$", d):
+            track_branch(22)
             ret_time = dt.strptime(d, "%H:%M").time()
         elif re.match("^[1-9]:[0-5][0-9]$", d):
+            track_branch(23)
             ret_time = dt.strptime("0" + d, "%H:%M").time()
 
         elif d == "next":
+            track_branch(24)
             parse_day = True
         elif d == "in" or d == "and":
+            track_branch(25)
             parse_delta_value = True
         else:
+            track_branch(26)
             break
         skip += 1
     return skip, dt.combine(ret_date, ret_time)
+
+import atexit
+atexit.register(write_coverage)

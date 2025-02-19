@@ -1,6 +1,15 @@
 from colorama import Fore
 from plugin import plugin
 
+branch_coverage = {}
+
+def track_branch(branch_id):
+    branch_coverage[branch_id] = branch_coverage.get(branch_id, 0) + 1
+
+def write_coverage():
+    with open("branch_coverage.log", "w") as f:
+        for branch, count in branch_coverage.items():
+            f.write(f"Branch {branch}: {count} hits\n")
 
 @plugin("bmr")
 def bmr(jarvis, s):
@@ -14,14 +23,18 @@ def bmr(jarvis, s):
     jarvis.say("Please enter your choice: ")
     choice = jarvis.input()
     while True:
+        track_branch(1)
         if choice == "1" or choice == "2":
+            track_branch(2)
             break
         else:
+            track_branch(3)
             jarvis.say("Sorry, invalid input was given. Try again! \n")
             jarvis.say("Please enter your choice: ")
             choice = jarvis.input()
 
     if choice == "2":
+        track_branch(4)
         jarvis.say("\nBasal Metabolic Rate (BMR)", Fore.GREEN)
         jarvis.say("is the number of calories your body needs"
                    "\nto accomplish its most basic (basal)\n"
@@ -31,44 +44,60 @@ def bmr(jarvis, s):
     # gets inputs and makes the necessary checks
     jarvis.say("What's your gender? (M/F)")
     while True:
+        track_branch(5)
         sex = jarvis.input()
         if sex.upper() == "M" or sex.upper() == "F":
+            track_branch(6)
             break
         jarvis.say("Sorry, invalid input was given!"
                    "Please try again. (M/F)")
     jarvis.say("What is your height (cm) ?")
     while True:
+        track_branch(7)
         try:
+            track_branch(8)
             height = int(jarvis.input())
             if height <= 0:
+                track_branch(9)
                 raise ValueError
             break
         except ValueError:
+            track_branch(10)
             print("Oops! That was no valid number. Try again...")
     jarvis.say("What is your weight (kg) ?")
     while True:
+        track_branch(11)
         try:
+            track_branch(12)
             weight = int(jarvis.input())
             if weight <= 0:
+                track_branch(13)
                 raise ValueError
             break
         except ValueError:
+            track_branch(14)
             print("Oops! That was no valid number. Try again...")
     jarvis.say("What is your age ?")
     while True:
+        track_branch(15)
         try:
+            track_branch(16)
             age = int(jarvis.input())
             if age <= 0:
+                track_branch(17)
                 raise ValueError
             break
         except ValueError:
+            track_branch(18)
             print("Oops! That was no valid number. Try again...")
 
     # formula changes based on sex
     if sex.upper() == 'F':
+        track_branch(19)
         bmr = (float(height) * 6.25) + (float(weight) * 9.99) - \
               (float(age) * 4.92) - 116
     elif sex.upper() == 'M':
+        track_branch(20)
         bmr = (float(height) * 6.25) + (float(weight) * 9.99) - \
               (float(age) * 4.92) - 5
     jarvis.say("BMR: " + str(bmr), Fore.GREEN)
@@ -81,16 +110,21 @@ def bmr(jarvis, s):
     jarvis.say("Please enter your choice(Y/N): ")
     amr_choice = jarvis.input()
     while True:
+        track_branch(21)
         if amr_choice.upper() == "Y" or amr_choice.upper() == "N":
+            track_branch(22)
             break
         else:
+            track_branch(23)
             jarvis.say("Sorry, invalid input was given. Try again! \n")
             jarvis.say("Please enter your choice(Y/N): ")
             amr_choice = jarvis.input()
 
     if amr_choice.upper() == "N":
+        track_branch(24)
         jarvis.say("Okay, bye!", Fore.BLUE)
     else:
+        track_branch(25)
         jarvis.say("Please enter your exercise level: \n")
         jarvis.say("1.Low\n2.Average\n3.High\n4.Every Day\n5.Athletic")
         jarvis.say("Please enter your choice: ")
@@ -99,22 +133,33 @@ def bmr(jarvis, s):
         exercise_level = jarvis.input()
         level_choices = ("1", "2", "3", "4", "5")
         while True:
+            track_branch(26)
             if exercise_level in level_choices:
+                track_branch(27)
                 break
             else:
+                track_branch(28)
                 jarvis.say("Sorry, invalid input was given. Try again! \n")
                 jarvis.say("Please enter your choice: ")
                 exercise_level = jarvis.input()
 
         if exercise_level == "1":
+            track_branch(29)
             amr = bmr * 1.2
         if exercise_level == "2":
+            track_branch(30)
             amr = bmr * 1.375
         if exercise_level == "3":
+            track_branch(31)
             amr = bmr * 1.55
         if exercise_level == "4":
+            track_branch(32)
             amr = bmr * 1.725
         if exercise_level == "5":
+            track_branch(33)
             amr = bmr * 1.9
 
         jarvis.say("AMR: " + str(amr), Fore.GREEN)
+
+import atexit
+atexit.register(write_coverage)
