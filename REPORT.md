@@ -83,8 +83,7 @@ I believe 2 main improvements could be added by refactoring this function:
 This refactor allows for lowering the cyclomatic complexity of the function from 26 to 8 for the main one, which now uses four helper functions with complexities 4, 3, 6, and 3\. This also makes the code much easier to understand and read for future developers. The refactor has been carried out and can be seen by using the command:
 
 *git diff cc9d5e07a3486e1f64ab07f13bb8c5ae1d60eb93 cbd07f26b71e4fd828b72c58d30e9263f525dd34*
-
-## I have also opened a PR on the project repository to add these tests to it, it can be found at [https://github.com/sukeesh/Jarvis/pull/1249](https://github.com/sukeesh/Jarvis/pull/1249)
+I have also opened a PR on the project repository to add these tests to it, it can be found at [https://github.com/sukeesh/Jarvis/pull/1249](https://github.com/sukeesh/Jarvis/pull/1249)
 
 **Elias Floreteng: hexToAssembly**  
 hexToAssembly is a function that is used in the Jarvis mips plugin to convert a hexadecimal string to its MIPS assembly command. There are different types of instructions/commands that can be converted from hex to assembly. These are: R-type, I-type and J-type. Regarding what can be refactored, each of these types could have their own helper function for parsing the hex and turning it into assembly. This will eliminate a lot of nested if-else statements in the main function body. Another possible refactor is to create a helper to decide which of the above type functions should be used, which currently is a while loop with an if statement inside the function.
@@ -144,7 +143,7 @@ The tests added can be easily found in the file *test\_parse\_date.py* or by usi
 
 *git diff cc9d5e07a3486e1f64ab07f13bb8c5ae1d60eb93 1ca64701c71c1b52ddd58b81831b1f0b3f138388*
 
-## I have also opened a PR on the project repository to add these tests to it, it can be found at [https://github.com/sukeesh/Jarvis/pull/1248](https://github.com/sukeesh/Jarvis/pull/1248) 
+I have also opened a PR on the project repository to add these tests to it, it can be found at [https://github.com/sukeesh/Jarvis/pull/1248](https://github.com/sukeesh/Jarvis/pull/1248) 
 
 **Elias Floreteng: hexToAssembly**  
 The function/plugin did not have any tests prior and therefore no coverage. In our coverage program there are 26 branches. With the [new tests for hexToAssembly](https://github.com/Group-18-DD2480/Jarvis/pull/22) implemented, the coverage was 24 out of 26, which gives a coverage of 92%. The only branches that are not covered are for handling s registers (our id 109\) and t registers (our id 112).
