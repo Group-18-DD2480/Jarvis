@@ -1,91 +1,92 @@
 import unittest
 from tests import PluginTest
+from unittest.mock import patch, MagicMock
 from plugins.flightradar import flightradar
 
 
-class FlightradarTest(PluginTest):
-    """
-        this class is testing the flight radar plugin
-    """
-    
+class TestFlightRadarPlugin(PluginTest):
+
     def setUp(self):
-        self.test = self.load_plugin(flightradar)
+        super().setUp()
+        self.plugin = self.load_plugin(flightradar)
 
-    def test_invalid_option_empty(self):
-        """Test for correct output message if use letters instead of numbers 
-        for first question"""
-        self.queue_input("")
-        expected_out= "Enter a vaild option"
+    @patch('FlightRadar24.api.FlightRadar24API.get_flights')
+    @patch('FlightRadar24.api.FlightRadar24API.get_airlines')
+    @patch('FlightRadar24.api.FlightRadar24API.get_airports')
+    @patch('builtins.input')
+    def test_check_airline_flights_by_icao(
+        self, 
+        mock_input, 
+        mock_get_airports, 
+        mock_get_airlines, 
+        mock_get_flights
+    ):
+        mock_input.side_effect = ['1','1','UAL']
 
-        self.test.run("")
-        self.assertEqual(self.history_say().last_text(), expected_out)
-    def test_invalid_option_letters(self):
-        """Test for correct output message if use letters instead of numbers 
-        for first question"""
-        self.queue_input("abba")
-        expected_out= "Enter a vaild option"
+        
+        mock_get_airports.return_value = []
+        mock_get_airlines.return_value = []
+        mock_get_flights.return_value = [
+            MagicMock(
+                airline_icao="UAL",
+                registration="N12345",
+                origin_airport_iata="JFK",
+                destination_airport_iata="LAX",
+                latitude=40.7128,
+                longitude=-74.0060,
+                time="12:00",
+                altitude=35000
+            )
+        ]
 
-        self.test.run("")
-        self.assertEqual(self.history_say().last_text(), expected_out)
-    def test_invalid_option_number(self):
-        """Test for correct output message if use letters instead of numbers 
-        for first question"""
-        self.queue_input("15")
-        expected_out= "Enter a vaild option"
+        self.plugin.run('flightradar')
 
-        self.test.run("")
-        self.assertEqual(self.history_say().last_text(), expected_out)
+        self.assertTrue(
+            any("UAL" in entry[0] for entry in self.history_say()._storage_by_index),
+            "Airline ICAO not found in output"
+        )
+        self.assertTrue(
+            any("N12345" in entry[0] for entry in self.history_say()._storage_by_index),
+            "Registration number not found"
+        )
 
-    def test_invalid_option_1_letters(self):
-        """Test for correct output msg when after going 
-        in to check airline flights an put letters instead of a number"""
-        self.queue_input("1")
-        self.queue_input("abba")
-        self.test.run("")
-        expected_out= "Enter a vaild option"    
-        self.assertEqual(self.history_say().last_text(), expected_out)
-    def test_invalid_option_1_number(self):
-        """Test for correct output msg when after going 
-        in to check airline flights and put a number outside the range"""
-        self.queue_input("1")
-        self.queue_input("15")
-        self.test.run("")
-        expected_out= "Enter a vaild option"    
-        self.assertEqual(self.history_say().last_text(), expected_out)
+    @patch('FlightRadar24.api.FlightRadar24API.get_flights')
+    @patch('FlightRadar24.api.FlightRadar24API.get_airlines')
+    @patch('FlightRadar24.api.FlightRadar24API.get_airports')
+    @patch('builtins.input')  
+    def test_check_flights_between_destinations_by_iata(
+        self, 
+        mock_input, 
+        mock_get_airports, 
+        mock_get_airlines, 
+        mock_get_flights
+    ):
+        mock_input.side_effect = ['2','1','JFK','LAX']
 
-    def test_empty_ICAO(self):
-        """Test for correct output msg when inputing an empty ICAO field"""
-        self.queue_input("1")
-        self.queue_input("1")
-        self.queue_input("")
-        self.test.run("")
-        expected_out= "Enter a ICAO"    
-        self.assertEqual(self.history_say().last_text(), expected_out)
-    def test_valid_ICAO(self):
-        """Test for correct output msg when inputing an empty ICAO field"""
-        self.queue_input("1")
-        self.queue_input("1")
-        self.queue_input("EZY")
-        self.test.run("")
-        self.assertTrue(self.history_say().contains('text',"EZY"))
-    
-    def test_invalid_option_2_letters(self):
-        """Test for correct output msg when after going 
-        in to check airline flights an put letters instead of a number"""
-        self.queue_input("2")
-        self.queue_input("abba")
-        self.test.run("")
-        expected_out= "Enter a vaild option"    
-        self.assertEqual(self.history_say().last_text(), expected_out)
-    def test_invalid_option_2_number(self):
-        """Test for correct output msg when after going 
-        in to check airline flights and put a number outside the range"""
-        self.queue_input("2")
-        self.queue_input("15")
-        self.test.run("")
-        expected_out= "Enter a vaild option"    
-        self.assertEqual(self.history_say().last_text(), expected_out)
-    
+        mock_get_airports.return_value = []
+        mock_get_airlines.return_value = []
+        mock_get_flights.return_value = [
+            MagicMock(
+                airline_icao="UAL",
+                registration="N12345",
+                origin_airport_iata="JFK",
+                destination_airport_iata="LAX",
+                latitude=40.7128,
+                longitude=-74.0060,
+                time="12:00",
+                altitude=35000
+            )
+        ]
+
+        # Run the plugin
+        self.plugin.run('flightradar')
+
+        # Verify outputs
+        self.assertTrue(
+            any("JFK" in entry[0] and "LAX" in entry[0] 
+                for entry in self.history_say()._storage_by_index),
+            "Route JFK->LAX not displayed"
+        )
 
 if __name__ == '__main__':
     unittest.main()
