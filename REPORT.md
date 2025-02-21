@@ -1,103 +1,193 @@
-# Report for assignment 3
-
-This is a template for your report. You are free to modify it as needed.
-It is not required to use markdown for your report either, but the report
-has to be delivered in a standard, cross-platform format.
+# Report for Assignment 3
 
 ## Project
 
-Name:
+**Name**: Jarvis
 
-URL:
+**URL**: [https://github.com/sukeesh/Jarvis](https://github.com/sukeesh/Jarvis)
 
-One or two sentences describing it
+**Description**: Jarvis is a non-AI-based personal assistant for the command line that runs on Linux, Mac, and Windows operating systems. Among its features, it offers entertainment options, including live command-line mini-games like blackjack or rock paper scissors, as well as practical utilities such as weather updates, and translation services. What's more, the software also provides useful tools like PDF converters, file management solutions, as well as various image processing utilities.
 
 ## Onboarding experience
 
-Did it build and run as documented?
-    
-See the assignment for details; if everything works out of the box,
-there is no need to write much here. If the first project(s) you picked
-ended up being unsuitable, you can describe the "onboarding experience"
-for each project, along with reason(s) why you changed to a different one.
+### Other Projects
 
+The initial projects we considered working on as a group were `rich`, `mypy`, and `sympy`. However, after some experimentation, we found that their setup was rather complex with the test coverage already being very high. Therefore, we decided to look for an alternative project with lower coverage and more room for improvement. Ultimately, we chose to work on the Jarvis project, since its contribution guideline specified that adding tests was optional, resulting in more opportunities to improve the project's coverage.
+
+### Documentation
+
+The documentation for the Jarvis project was generally acceptable and addressed the most common issues, however, could be improved to enhance its clarity and usefulness. Even though the main installation instructions were mostly clear, the contributing guidelines were not particularly well documented, providing only generic instructions on the commit style, as well as referencing external sources without a dedicated explanation.
+
+### Installation
+
+The initial steps for building the Jarvis project were mostly straightforward and involved forking and cloning the repository, followed by running a dedicated bash installer for the project, which automatically installed all of the necessary tools and project dependencies.
+
+`git clone https://github.com/sukeesh/Jarvis.git`
+
+However, some issues were encountered when setting up the project on the Windows operating system. Specifically, the Windows command line and provided bash scripts did not recognize the command `python3`, requiring the use of `python` command instead. This resulted in compatibility issues with the supplied installation and test files, which were configured to work with `python3` command. After resolving the issues in the install script, the project was installed without errors using the installer.
+
+`python installer`
+
+Additionally, the two most common issues described in the *Frequently Encountered Issues* section of the documentation were also encountered and resolved as specified, involving installation of the virtual environment, as well as re-installation of the problematic modules, which caused Python import not found errors in the initial installation.
+
+`python3 -m pip install virtualenv`
+
+Optional dependencies were also defined in the documentation, however there was no direct instructions on how to integrate them into the Jarvis project. Moreover, containerization with Docker was very briefly mentioned as a possibility, but without direct explanation on the necessary steps involved.
+
+### Testing
+
+Jarvis project was supplied with a bash testing script, which was responsible for running all of the unit tests for the project.
+
+`./test.sh`
+
+However, the same problem as with the installation script was encountered with the testing script, since it relied on the `python3` command, making it once again not compatible with the Windows operating systems, requiring a manual modification of the testing script to use the `python` command instead.
+
+`python -m unittest discover`
 
 ## Complexity
 
-1. What are your results for five complex functions?
-   * Did all methods (tools vs. manual count) get the same result?
-   * Are the results clear?
-2. Are the functions just complex, or also long?
-3. What is the purpose of the functions?
-4. Are exceptions taken into account in the given measurements?
-5. Is the documentation clear w.r.t. all the possible outcomes?
+We used lizard to analyze the complexity to identify the most complex functions and then sorted the results to keep the longest and most complex ones in the evaluation.
 
-## Refactoring
+`lizard jarviscli`
 
-Plan for refactoring complex code:
+From the result, we picked the five most complex functions:   
+![][image1]  
+We then counted them by hand using McCabe’s complexity metric and got the following:
 
-Estimated impact of refactoring (lower CC, but other drawbacks?).
+- assembly to hex: 55  
+- flight radar: 39  
+- hex to assembly: 27  
+- bmr: 22  
+- parse date: 26
 
-Carried out refactoring (optional, P+):
+Using Lizard we also checked the longest functions, which in most cases were of high complexity as the ones above, except for a few ones such as elements with a CNN of 4 and 120 lines of code.  
+Most of these functions’ jobs are parsing which causes them to contain a lot of if statements, making it a bit hard to navigate without proper experience in Python. Existence of a lot of if-else statements significantly increases the cyclomatic complexity of these functions, when McCabe’s complexity metric is utilized. The documentation of the function helps a bit as it explains the purpose of the function pretty well without going into too much detail.
 
-git diff ...
+## Refactoring	
 
-## Coverage
+**Jakub Rybak: bmr**  
+The `bmr()` function could be refactored significantly by splitting functions into smaller methods, as currently all of the code (100+ lines) is contained within one function. Specifically, the functionality to calculate BMR for male and female could be separated into smaller modules, in order to avoid excessive (if else) branch nesting. 
 
-### Tools
+Additionally, the so-called ‘magic string’ values (static typed strings) in code could be replaced with the introduction of constants or enumerations from class Enum in Python to improve clarity and scalability of the code.
 
-Document your experience in using a "new"/different coverage tool.
+Finally, the `bmr()` function relies on numerous “wait for input” sequences in “while True” loops, creating a lot of duplicated code, which could be effectively grouped into a single method, for example `wait_for_input`, which accepts the expected parameters, question to the user and returns their input, effectively reducing redundancy within the code.
 
-How well was the tool documented? Was it possible/easy/difficult to
-integrate it with your build environment?
+### 
 
-### Your own coverage tool
+**Coli Alessandro: parse\_date**  
+I believe 2 main improvements could be added by refactoring this function:
 
-Show a patch (or link to a branch) that shows the instrumented code to
-gather coverage measurements.
+1. **Single Responsibility Methods**: Split the function into smaller methods, each one focusing on a specific task. Using Single Responsibility Methods allows to use of a chain of parser attempts that makes the code more maintainable and easier to extend compared to the current if chain.  
+2. **Lookup Tables**: Replaced the multiple if statements with a dictionary of regex patterns for formats and a map for time units to their respective handlers
 
-The patch is probably too long to be copied here, so please add
-the git command that is used to obtain the patch instead:
+This refactor allows for lowering the cyclomatic complexity of the function from 26 to 8 for the main one, which now uses four helper functions with complexities 4, 3, 6, and 3\. This also makes the code much easier to understand and read for future developers. The refactor has been carried out and can be seen by using the command:
 
-git diff ...
+*git diff cc9d5e07a3486e1f64ab07f13bb8c5ae1d60eb93 cbd07f26b71e4fd828b72c58d30e9263f525dd34*
+I have also opened a PR on the project repository to add these tests to it, it can be found at [https://github.com/sukeesh/Jarvis/pull/1249](https://github.com/sukeesh/Jarvis/pull/1249)
 
-What kinds of constructs does your tool support, and how accurate is
-its output?
+**Elias Floreteng: hexToAssembly**  
+hexToAssembly is a function that is used in the Jarvis mips plugin to convert a hexadecimal string to its MIPS assembly command. There are different types of instructions/commands that can be converted from hex to assembly. These are: R-type, I-type and J-type. Regarding what can be refactored, each of these types could have their own helper function for parsing the hex and turning it into assembly. This will eliminate a lot of nested if-else statements in the main function body. Another possible refactor is to create a helper to decide which of the above type functions should be used, which currently is a while loop with an if statement inside the function.
 
-### Evaluation
+**Yusuf Demir: assemblyToHex**  
+assemblyToHex is a function that is used in the Jarvis mips plugin to convert a MIPS Assembly instruction (in string format) to its corresponding hexadecimal machine code. There are different types of instructions/commands that can be converted from assembly to hex. These are: R-type, I-type and J-type.
 
-1. How detailed is your coverage measurement?
+* To decrease the CC, a helper preprocessing function can be used to handle string cleanup (regular expressions can be used too). Also, this improvement makes testing easier.  
+* Instead of using nested if-else blocks, error conditions can be checked earlier (some of them are not even checked) and returned immediately.  
+* There are many repeated codes, such as appending register binary codes. They can be consolidated as helper functions, to further increase readability and decrease CC.
 
-2. What are the limitations of your own tool?
+**Ruri Osmon: flightradar**  
+Flightradar is a function that uses FlightRadar24API to get up to date radar information about aircraft and airports. To find out what the users wants, it asks questions first and takes the users input with input(“text”).   
+To decrease complexity, I would first create sub-functions for each high level, 1\) Check Airline flights,  2\) Check Flight between Destinations, 3\) Track flight and for both 1\) and 2\) some more sub-functions to deal with get\_input\_method’s different values. This would already make the code much more readable and there is also on lines 21-28, 43-50, 94-99 some very similar code that could be refactored notably with a helper function for outputting the aircraft found.  
+Something I would add would be a helper function to deal with invalid inputs which is barely checked for and could causes errors and crashes. And if there is an invalid input, give the user another chance to input with some while loops.
 
-3. Are the results of your tool consistent with existing coverage tools?
+### Coverage
+
+After setting up and addressing the issues with the testing script, an analysis of the coverage was done by running the `coverage` Python package together with the `--branch` flag and existing unit tests. Run this in the jarviscli folder:
+
+`coverage run --branch -m unittest discover`
+
+The coverage report was then generated either in the command line or in HTML format by running. (add flag \-i if it doesn't work)
+
+`coverage report`
+
+`coverage html`
+
+### Our coverage tool
+
+We implemented a simple coverage tool for the 5 wanted functions that print which branches are covered in a branch\_coverage.log file. The development can be found in the branch [**feat-branch-coverage**](https://github.com/Group-18-DD2480/Jarvis/tree/feat-branch-coverage) of our project.  
+The tool is very simple as it’s just hardcoded and therefore it does not consider ternary operators or logical connectors but it works pretty well in checking which branches have been visited or not and how many times. The implementation can be be found in the specific branch, by using the command:
+
+*git diff cc9d5e07a3486e1f64ab07f13bb8c5ae1d60eb93 534870f6f5454b55cf4c03cad121928070a70774*
 
 ## Coverage improvement
 
-Show the comments that describe the requirements for the coverage.
+By running the command   
+`coverage run --branch -m unittest discover && coverage html`  
+It runs all the tests and then generates an HTML coverage file which shows that the initial coverage of the 5 functions is 0%.  
+By running the same command again after the added tests it shows the coverage improvement for the different functions.
 
-Report of old coverage: [link]
+**Coli Alessandro: parse\_date**  
+This function wasn’t tested in the original project as can be seen by the result of our coverage tool and the coverage python package, which shows a 0% coverage.   
+![][image2]  
+Therefore I proceeded to add tests to cover most of the functionalities, except for the invalid input cases, in particular, I added 4 tests with multiple test cases inside each one:
 
-Report of new coverage: [link]
+* Test\_date\_formats: Test all possible date format patterns.  
+* Test\_time\_formats: Test all time format patterns.  
+* Test\_relative\_time: Test relative time expressions.  
+* Test\_next\_weekday: Test next weekday expressions.
 
-Test cases added:
+After these added tests, the coverage was 23 out of 26 branches from our tool and 93% as shown by the report of the coverage python package.  
+![][image3]
 
-git diff ...
+The tests added can be easily found in the file *test\_parse\_date.py* or by using the command:
 
-Number of test cases added: two per team member (P) or at least four (P+).
+*git diff cc9d5e07a3486e1f64ab07f13bb8c5ae1d60eb93 1ca64701c71c1b52ddd58b81831b1f0b3f138388*
+
+I have also opened a PR on the project repository to add these tests to it, it can be found at [https://github.com/sukeesh/Jarvis/pull/1248](https://github.com/sukeesh/Jarvis/pull/1248) 
+
+**Elias Floreteng: hexToAssembly**  
+The function/plugin did not have any tests prior and therefore no coverage. In our coverage program there are 26 branches. With the [new tests for hexToAssembly](https://github.com/Group-18-DD2480/Jarvis/pull/22) implemented, the coverage was 24 out of 26, which gives a coverage of 92%. The only branches that are not covered are for handling s registers (our id 109\) and t registers (our id 112).
+
+**Jakub Rybak: bmr**  
+Beforehand there were no tests for the BMR plugin, hence the coverage was 0%. To improve the coverage, the following two test cases, responsible for testing the BMR and AMR calculations for both male and female, were introduced in the new test file `test_bmr`.
+
+- `test_bmr_amr_for_male`  
+- `test_bmr_amr_for_female`
+
+The unit tests used Jarvis PluginTest module to successfully simulate user interaction with the Jarvis command line tool (CLI). Two sample interactions were added to the input stack and the successively queried verifying the calculation result. After the introduction of the two new unit tests for the plugin, out of 32 branches, 17 were fully covered, while 15 only partially, resulting in the consequent improvement of coverage from 0% to 63%.
+
+**Yusuf Demir: assemblyToHex**  
+Beforehand there was no tests for the assemblyToHex function, thus leading to a coverage of 0%.  
+In our coverage program there were 72 branches, and after implementing new tests for assebmlyToHex coverage increased, significantly, to 59%.
+
+There are 2 test cases. One is for a valid “addi” instruction and the other one is testing an invalid instruction given as input. They can be found in the new test file  `test_assemblyToHex`.
+
+- `test_valid_addi`  
+- `Test_invalid_command`
+
+The unit tests used Jarvis PluginTest module to successfully simulate user interaction with the Jarvis command line tool (CLI).  
+**Ruri Osmon**  
+There were also no tests for flightradar so it also had a coverage of 0%. It was quite difficult to test this function as there is no return value to easily verify and the author did not use the tools of the project to take inputs, combined with the fact that they used javis.says irregularly, finding where the values were to test them was difficult. Decorator @patches were needed.
+
+There are 2 test cases in `test_flightradar`. They both make up values for aircraft and make sure they are displayed. 
+
+- `test_check_airline_flights_by_icao`  
+- `test_check_flights_between_destinations_by_iata`
+
+29% coverage and 7 branches out of 72 are covered
 
 ## Self-assessment: Way of working
 
-Current state according to the Essence standard: ...
+The current state according to the Essence standard is the Ready state, since the changes and tests introduced are complete, paired with documentation, however, most of them were not yet merged into the parent Jarvis repository, meaning they are not available for the stakeholder. Additionally, it is difficult to assess the acceptance of the stakeholders, since most of the changes have not been proposed yet on the parent repository. 
 
-Was the self-assessment unanimous? Any doubts about certain items?
-
-How have you improved so far?
-
-Where is potential for improvement?
+As of now, the convention for contributions within the group and workflow has been well established and tested, making sure that relevant guidelines are included in the description of every project conducted by the group. Moreover, every group member is committed to adding relevant and readable documentation to the implemented modules. However, communication within the group could be slightly improved in order to improve overall organization and ensure a smoother experience when working on a collaborative project.
 
 ## Overall experience
 
-What are your main take-aways from this project? What did you learn?
+Working with Jarvis CLI was generally a pretty difficult experience for our group, since after the initial setup unforeseen errors were to come. While basic installation was pretty straightforward, individual modules which were selected by members faced many problems, depending on the operating system and particular instance of Python on the computer. Consequently, debugging each other’s solutions proved to be a very big challenge, giving us space for reflection on how difficult it is to cooperate solutions on different operating systems.
 
-Is there something special you want to mention here?
+[image1]: <data:image/png;base64,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>
+
+[image2]: <data:image/png;base64,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>
+
+[image3]: <data:image/png;base64,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>
